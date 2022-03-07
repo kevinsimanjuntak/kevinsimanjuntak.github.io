@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <title>Dashboard Antrian Farmasi</title>
+    <style>
+      body {
+        background-color: rgb(255, 255, 255);
+      }
+    </style>
+</head>
+<body>
+    <div id="app" class="row">
+        <div class="card col-md-12">
+            <div class="card-header">
+                Sedang diproses
+            </div>
+            <div class="card-body">
+                <ol v-for="daftarAntrian in daftarAntrian">
+                    <li>{{ daftarAntrian.noAntrian }}</li>
+                </ol>
+            </div>
+        </div>
+        <h4 class="mb-3 mt-3 text-center">Sudah Selesai</h4>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    Obat Jadi
+                </div>
+                <div class="card-body">
+                    <ol v-for="daftarAntrianJadi in daftarAntrianJadi">
+                        <li>{{ daftarAntrianJadi.noAntrian }}</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    Obat Racikan
+                </div>
+                <div class="card-body">
+                    <ol v-for="daftarAntrianRacikan in daftarAntrianRacikan">
+                        <li>{{ daftarAntrianRacikan.noAntrian }}</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    Obat Kronis
+                </div>
+                <div class="card-body">
+                    <ol v-for="daftarAntrianKronis in daftarAntrianKronis">
+                        <li>{{ daftarAntrianKronis.noAntrian }}</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Axios -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script>
+      function padTo2Digits(num) {
+        return num.toString().padStart(2, '0');
+      }
+      function diff_minutes(dt2, dt1) 
+      {
+
+        var diff =(dt2.getTime() - dt1.getTime()) / 1000;
+        diff /= 60;
+        return Math.abs(Math.round(diff));
+        
+      }
+        var app = new Vue ({
+            el: '#app',
+            data: {
+                errors: [],
+                message: null,
+                daftarAntrian:[],
+                daftarAntrianSelesai:[],
+                daftarAntrianIdEdit: null,
+                daftarAntrianIdDelete: null,
+                editMode: false,
+                deleteMode: false,
+                namaPasien: '',
+                tipeObat: '',
+                waktuPengerjaan: '0',
+            },
+            mounted: function() {
+                this.getdaftarAntrian();
+                this.seconss();
+            },
+            methods: {
+                getdaftarAntrian() {
+                    axios.get('https://6223b45d3af069a0f9a868bd.mockapi.io/daftarAntrian')
+                        .then(response => {
+                          var yourDate  = new Date();
+                          var tempData = response.data;var q = new Date();
+                          var m = q.getMonth()+1;
+                          var d = q.getDate();
+                          var y = q.getFullYear();
+                          var todayDate = new Date(y,m,d);
+                          this.daftarAntrian = tempData.filter(o => {let date = new Date(o.createdDate); return (diff_minutes(date, yourDate) < parseInt(o.waktuPengerjaan)) || new Date(date.getFullYear(),(date.getMonth() + 1), date.getDate()) > todayDate && o.taken == 2;});
+                          this.daftarAntrianJadi = tempData.filter(o => {let date = new Date(o.createdDate); return diff_minutes(date, yourDate) >= parseInt(o.waktuPengerjaan) && date <= yourDate && o.taken == 2 && o.tipeObat == 1;});
+                          this.daftarAntrianRacikan = tempData.filter(o => {let date = new Date(o.createdDate); return diff_minutes(date, yourDate) >= parseInt(o.waktuPengerjaan) && date <= yourDate && o.taken == 2 && o.tipeObat == 2;});
+                          this.daftarAntrianKronis = tempData.filter(o => {let date = new Date(o.createdDate); return diff_minutes(date, yourDate) >= parseInt(o.waktuPengerjaan) && date <= yourDate && o.taken == 2 && o.tipeObat == 3;});
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+                },
+                seconss: function(){
+                    setInterval(function(){
+                        axios.get('https://6223b45d3af069a0f9a868bd.mockapi.io/daftarAntrian')
+                        .then(response => {
+                          var yourDate  = new Date();
+                          var tempData = response.data;var q = new Date();
+                          var m = q.getMonth()+1;
+                          var d = q.getDate();
+                          var y = q.getFullYear();
+                          var todayDate = new Date(y,m,d);
+                          this.daftarAntrian = tempData.filter(o => {let date = new Date(o.createdDate); return (diff_minutes(date, yourDate) < parseInt(o.waktuPengerjaan)) || new Date(date.getFullYear(),(date.getMonth() + 1), date.getDate()) > todayDate && o.taken == 2;});
+                          this.daftarAntrianJadi = tempData.filter(o => {let date = new Date(o.createdDate); return diff_minutes(date, yourDate) >= parseInt(o.waktuPengerjaan) && date <= yourDate && o.taken == 2 && o.tipeObat == 1;});
+                          this.daftarAntrianRacikan = tempData.filter(o => {let date = new Date(o.createdDate); return diff_minutes(date, yourDate) >= parseInt(o.waktuPengerjaan) && date <= yourDate && o.taken == 2 && o.tipeObat == 2;});
+                          this.daftarAntrianKronis = tempData.filter(o => {let date = new Date(o.createdDate); return diff_minutes(date, yourDate) >= parseInt(o.waktuPengerjaan) && date <= yourDate && o.taken == 2 && o.tipeObat == 3;});
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+                    }, 1000);
+                },
+                getEdit: function (daftarAntrian) {
+                    this.message = null;
+                    this.daftarAntrianIdEdit = daftarAntrian.noAntrian;
+                    this.updatedaftarAntrian();
+                },
+                getDelete: function (daftarAntrian) {
+                    this.message = null;
+                    this.daftarAntrianIdDelete = daftarAntrian.noAntrian;
+                    this.deleteDaftarAntrian();
+                },
+                updatedaftarAntrian: function () {
+                    axios.put(`https://6223b45d3af069a0f9a868bd.mockapi.io/daftarAntrian/${this.daftarAntrianIdEdit}`, {
+                        taken:1,
+                        })
+                        .then(res => {
+                            // handle success
+                            this.message = "Your data has been updated";
+                            this.getdaftarAntrian();
+                        })
+                        .catch(err => {
+                            // handle error
+                            console.log(err);
+                        })
+                },
+                // Delete daftarAntrian
+                deleteDaftarAntrian: function () {
+                    axios.delete(`https://6223b45d3af069a0f9a868bd.mockapi.io/daftarAntrian/${this.daftarAntrianIdDelete}`)
+                        .then(res => {
+                            // handle success
+                            this.message = "Your data has been deleted";
+                            this.getdaftarAntrian();
+                        })
+                        .catch(err => {
+                            // handle error
+                            console.log(err);
+                        })
+                }
+            }
+        })
+        
+    </script>
+</body>
+</html>

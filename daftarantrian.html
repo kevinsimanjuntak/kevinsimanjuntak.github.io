@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Antrian Farmasi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    
+</head>
+<body>
+    <nav class="navbar navbar-expand-sm bg-primary navbar-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+          <img src="https://static.wikia.nocookie.net/logopedia/images/1/14/Rumah_Sakit_Advent_Medan.png/revision/latest?cb=20191011092233" alt="Avatar Logo" style="width: 40px" class="rounded-pill" />
+          RS ADVENT MEDAN
+        </a>
+      </div>
+    </nav>
+    <ul class="nav">
+      <li class="nav-item">
+        <a class="nav-link active" aria-current="page" href="daftarantrian.html">Dashboard Antrian Farmasi</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="obatbelumdiambil.html">Dashboard obat Belum di Ambil</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="tampilanantrian.html">Daftar Antrian</a>
+      </li>
+    </ul>
+
+    <div id="app">
+
+        <div class="container">
+      
+              <div class="py-5 col-md-12">
+                <h4 class=" ">Data Antrian Resep Farmasi <button class="btn btn-md btn-primary ms-auto" v-on:click="resetForm()">Create new User </button>
+                </h4>
+                <table class="table table-dark table-striped">
+                    <tr>
+                        <th>Nomor Antrian</th>
+                        <th>Nama Pasien</th>
+                        <th>Tipe Obat</th>
+                        <th>Waktu Pengerjaan</th>
+                        <th>Tanggal dibuat</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                    <tr v-for="daftarAntrian in daftarAntrian">
+                      <td>{{ daftarAntrian.noAntrian }}</td>
+                      <td>{{ daftarAntrian.namaPasien }}</td>
+                      <td v-if="daftarAntrian.tipeObat == 1">Obat Jadi</td>
+                      <td v-if="daftarAntrian.tipeObat == 2">Obat Racikan</td>
+                      <td v-if="daftarAntrian.tipeObat == 3">Obat Kronis</td>
+                      <td>{{ daftarAntrian.waktuPengerjaan }} menit</td>
+                      <td>{{ daftarAntrian.createdDate }}</td>
+                      <td><button class="btn btn-md btn-outline-warning" v-on:click="getEdit(daftarAntrian)">Edit</button></td>
+                      <td><button class="btn btn-outline-danger" v-on:click="getDelete(daftarAntrian)">Delete</button></td>
+                    </li>
+                </table>
+
+                <div v-if="message" class="alert alert-success" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                </div>
+                
+            
+                <h4 class="mb-3">User Information</h4>
+                <form class="needs-validation" novalidate>
+                  <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <label for="namaPasien">Nama Pasien</label>
+                        <input  v-model="namaPasien" type="text" class="form-control" id="namaPasien" placeholder="" value="" required>
+                        <div class="invalid-feedback">
+                            Valid first name is required.
+                        </div>    
+                    </div>
+                  </div>
+                  <div class="row">
+                    <p>Tipe Obat</p>
+                    <div class="form-check col-md-2 mb-2">
+                        <input class="tipeObat" type="radio" id="obatJadi" :value="1" v-model="tipeObat">
+                        <label class="form-check-label" for="obatJadi">
+                        Obat Jadi
+                        </label>
+                    </div>
+                    <div class="form-check col-md-3 mb-2">
+                        <input class="tipeObat" type="radio" id="obatRacikan" :value="2" v-model="tipeObat">
+                        <label class="form-check-label" for="obatRacikan">
+                        Obat Racikan
+                        </label>
+                    </div>
+                    <div class="form-check col-md-3 mb-2">
+                        <input class="tipeObat" type="radio" id="obatKronis" :value="3"  v-model="tipeObat">
+                        <label class="form-check-label" for="obatKronis">
+                        Obat Kronis
+                        </label>
+                    </div>
+                  </div>
+                  
+                  <br>
+      
+                    <div class="col-md-6 mb-3">
+                        <select v-model="waktuPengerjaan" class="form-select" aria-label="Default select example">
+                            <option :value="0">Waktu Pengerjaan</option>
+                            <option :value="15">15 menit</option>
+                            <option :value="45">45 menit</option>
+                            <option :value="60">60 menit</option>
+                        </select>
+                    </div>
+                  </div>
+                
+                  <hr class="mb-4">
+                  <button v-if="!editMode && !deleteMode" v-on:click="createdaftarAntrian" class="btn btn-primary btn-lg btn-block" type="submit">Submit Data</button>
+                  <button v-if="editMode" v-on:click="updatedaftarAntrian" class="btn btn-warning btn-lg btn-block" type="submit">Update Data</button>
+                  <button v-if="deleteMode" v-on:click="deleteDaftarAntrian" class="btn btn-danger btn-lg btn-block" type="submit">Delete Data</button>
+                  
+                </form>
+        </div>
+        <div class="container">
+            <div class="py-5 ">
+                <div class="col-md-12">
+                    <h4 class="container ">Data Antrian Resep Selesai
+                    </h4>
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Nomor Antrian</th>
+                            <th>Nama Pasien</th>
+                            <th>Tipe Obat</th>
+                            <th>Waktu Pengerjaan</th>
+                            <th>Tanggal dibuat</th>
+                            <th>Action</th>
+                            <!-- <th>Diambil</th>
+                            <th>Belum Diambil</th> -->
+                        </tr>
+                        <tr v-for="daftarAntrianSelesai in daftarAntrianSelesai">
+                            <td>{{ daftarAntrianSelesai.noAntrian }}</td>
+                            <td>{{ daftarAntrianSelesai.namaPasien }}</td>
+                            <td v-if="daftarAntrianSelesai.tipeObat == 1">Obat Jadi</td>
+                            <td v-if="daftarAntrianSelesai.tipeObat == 2">Obat Racikan</td>
+                            <td v-if="daftarAntrianSelesai.tipeObat == 3">Obat Kronis</td>
+                            <td>{{ daftarAntrianSelesai.waktuPengerjaan }}</td>
+                            <td>{{ daftarAntrianSelesai.createdDate }}</td>
+                            <!-- <td><button class="btn btn-success" v-on:click="getambil(daftarAntrianSelesai)">DiAmbil</button></td> -->
+                            <td><button class="btn btn-info" v-on:click="getBelum(daftarAntrianSelesai)">Belum Diambil</button></td>
+                        </li>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+      </div>
+    
+
+    <!-- Axios -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script>
+      function padTo2Digits(num) {
+        return num.toString().padStart(2, '0');
+      }
+      function diff_minutes(dt2, dt1) 
+      {
+
+        var diff =(dt2.getTime() - dt1.getTime()) / 1000;
+        diff /= 60;
+        return Math.abs(Math.round(diff));
+        
+      }
+        var app = new Vue ({
+            el: '#app',
+            data: {
+                errors: [],
+                message: null,
+                daftarAntrian:[],
+                daftarAntrianSelesai:[],
+                daftarAntrianIdEdit: null,
+                daftarAntrianIdDelete: null,
+                editMode: false,
+                deleteMode: false,
+                namaPasien: '',
+                tipeObat: '',
+                waktuPengerjaan: '0',
+            },
+            mounted: function() {
+                this.getdaftarAntrian();
+            },
+            methods: {
+                getdaftarAntrian() {
+                    axios.get('https://6223b45d3af069a0f9a868bd.mockapi.io/daftarAntrian')
+                        .then(response => {
+                          var yourDate  = new Date();
+                          var tempData = response.data;var q = new Date();
+                          var m = q.getMonth()+1;
+                          var d = q.getDate();
+                          var y = q.getFullYear();
+                          var todayDate = new Date(y,m,d);
+                          this.daftarAntrian = tempData.filter(o => {let date = new Date(o.createdDate); return (diff_minutes(date, yourDate) < parseInt(o.waktuPengerjaan)) || new Date(date.getFullYear(),(date.getMonth() + 1), date.getDate()) > todayDate && o.taken == 2;});
+                          this.daftarAntrianSelesai = tempData.filter(o => {let date = new Date(o.createdDate); return diff_minutes(date, yourDate) >= parseInt(o.waktuPengerjaan) && date <= yourDate && o.taken == 2;});
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+                },
+                createdaftarAntrian: function(){
+                    var yourDate  = new Date();
+                    var anotherDate = new Date(yourDate.getFullYear() + '-' + padTo2Digits(yourDate.getMonth() + 1) + '-' + padTo2Digits(yourDate.getDate()) + ' ' + padTo2Digits(yourDate.getHours()) + ':' + padTo2Digits(yourDate.getMinutes()));
+                    console.log(anotherDate);
+                    axios.post('https://6223b45d3af069a0f9a868bd.mockapi.io/daftarAntrian', {
+                        namaPasien: this.namaPasien,
+                        tipeObat: this.tipeObat,
+                        waktuPengerjaan: this.waktuPengerjaan,
+                        createdDate : yourDate.getFullYear() + '-' + padTo2Digits(yourDate.getMonth() + 1) + '-' + padTo2Digits(yourDate.getDate()) + ' ' + padTo2Digits(yourDate.getHours()) + ':' + padTo2Digits(yourDate.getMinutes()),
+                        taken:2,
+                        
+                    })
+                    .then(response => {
+                            this.getdaftarAntrian();
+                            this.message = "Your data has been submitted";
+                            console.log(message);
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+                },
+                resetForm: function () {
+                    this.message = null;
+                    this.editMode = false;
+                    this.deleteMode = false;
+                    this.daftarPasienIdEdit = null;
+                    this.namaPasien = '';
+                    this.tipeObat = '';
+                    this.waktuPengerjaan= '0';
+                },
+                getEdit: function (daftarAntrian) {
+                    this.message = null;
+                    this.editMode = true;
+                    this.deleteMode = false;
+                    this.daftarAntrianIdEdit = daftarAntrian.noAntrian;
+                    this.namaPasien = daftarAntrian.namaPasien;
+                    this.tipeObat= daftarAntrian.tipeObat;
+                    this.waktuPengerjaan =daftarAntrian.waktuPengerjaan;
+                },
+                getBelum: function (daftarAntrianSelesai) {
+                    this.message = null;
+                    this.daftarAntrianIdUpdateBelum = daftarAntrianSelesai.noAntrian;
+                    this.updateBelum();
+                },
+                getDelete: function (daftarAntrian) {
+                    this.message = null;
+                    this.editMode = false;
+                    this.deleteMode = true;
+                    this.daftarAntrianIdDelete = daftarAntrian.noAntrian;
+                    this.namaPasien = daftarAntrian.namaPasien;
+                    this.tipeObat= daftarAntrian.tipeObat;
+                    this.waktuPengerjaan =daftarAntrian.waktuPengerjaan;
+                },
+                updatedaftarAntrian: function () {
+                    axios.put(`https://6223b45d3af069a0f9a868bd.mockapi.io/daftarAntrian/${this.daftarAntrianIdEdit}`, {
+                        namaPasien: this.namaPasien,
+                        tipeObat: this.tipeObat,
+                        waktuPengerjaan: this.waktuPengerjaan,
+                        taken:2,
+                        })
+                        .then(res => {
+                            // handle success
+                            this.message = "Your data has been updated";
+                            this.getdaftarAntrian();
+                        })
+                        .catch(err => {
+                            // handle error
+                            console.log(err);
+                        })
+                },
+                updateBelum: function () {
+                    axios.put(`https://6223b45d3af069a0f9a868bd.mockapi.io/daftarAntrian/${this.daftarAntrianIdUpdateBelum}`, {
+                        taken:0,
+                        })
+                        .then(res => {
+                            // handle success
+                            this.message = "Your data has been updated";
+                            this.getdaftarAntrian();
+                        })
+                        .catch(err => {
+                            // handle error
+                            console.log(err);
+                        })
+                },
+                // Delete daftarAntrian
+                deleteDaftarAntrian: function () {
+                    axios.delete(`https://6223b45d3af069a0f9a868bd.mockapi.io/daftarAntrian/${this.daftarAntrianIdDelete}`)
+                        .then(res => {
+                            // handle success
+                            this.message = "Your data has been deleted";
+                            this.getdaftarAntrian();
+                        })
+                        .catch(err => {
+                            // handle error
+                            console.log(err);
+                        })
+                }
+            }
+        })
+        
+    </script>
+
+
+</body>
+</html>
